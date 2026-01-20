@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IsraelGPT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2a2a2a;
+            --bg-tertiary: #3a3a3a;
+            --bg-hover: #4a4a4a;
+            --border-color: #3a3a3a;
+            --text-primary: #e5e5e5;
+            --text-secondary: #d1d5db;
+            --text-muted: #6b7280;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --input-bg: #1a1a1a;
+            --input-focus-bg: #252525;
+        }
+
+        body.light-theme {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --bg-hover: #e5e7eb;
+            --border-color: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #374151;
+            --text-muted: #6b7280;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --input-bg: #ffffff;
+            --input-focus-bg: #f9fafb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .logo img {
+            height: 38px;
+            width: auto;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .settings-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .settings-menu {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 100;
+            min-width: 200px;
+        }
+
+        .settings-menu.active {
+            display: block;
+        }
+
+        .settings-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .settings-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .theme-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-tertiary);
+            padding: 2px;
+            border-radius: 6px;
+        }
+
+        .theme-option {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-option.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background: var(--bg-hover);
+        }
+
+        .history-list {
+            padding: 8px;
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .history-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .history-section {
+            margin-bottom: 20px;
+        }
+
+        .history-section-title {
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 8px 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .history-item {
+            padding: 10px 12px;
+            margin: 2px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .history-item.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .message {
+            margin-bottom: 24px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .user-avatar {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .sender-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .message-content {
+            padding-left: 36px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .typing-indicator {
+            padding-left: 36px;
+            display: none;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            gap: 4px;
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        .input-container {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 16px 20px;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px 12px;
+            transition: all 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--accent);
+            background: var(--input-focus-bg);
+        }
+
+        #userInput {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            color: var(--text-primary);
+            outline: none;
+            resize: none;
+            max-height: 200px;
+            min-height: 24px;
+            line-height: 1.5;
+            font-family: inherit;
+        }
+
+        #userInput::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-button:hover {
+            background: var(--accent-hover);
+        }
+
+        .send-button:disabled {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+        }
+
+        .welcome-screen {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .welcome-screen h2 {
+            font-size: 24px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .welcome-screen p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .ai-avatar {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-profile {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            overflow: hidden;
+            z-index: 50;
+        }
+
+        .user-profile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-profile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .profile-modal.active {
+            display: flex;
+        }
+
+        .profile-modal-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .profile-modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .profile-input-group {
+            margin-bottom: 16px;
+        }
+
+        .profile-input-group label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .profile-input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .profile-input-group input:focus {
+            border-color: var(--accent);
+        }
+
+        .profile-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .profile-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .profile-btn-cancel {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .profile-btn-cancel:hover {
+            background: var(--bg-hover);
+        }
+
+        .profile-btn-save {
+            background: var(--accent);
+            color: white;
+        }
+
+        .profile-btn-save:hover {
+            background: var(--accent-hover);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREgCHim-74geEh48VXN3wRERQko-VR8M0prw&s"
+                     alt="Logo IsraelGPT">
+            </div>
+            <div class="title">IsraelGPT</div>
+        </div>
+        <button class="settings-btn" id="settingsBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6m0 6v6m9-9h-6M7 12H1m17.66-7.66l-4.25 4.25m-7.07 7.07L3.34 20.66m17.66 0l-4.25-4.25M10.59 10.59L3.34 3.34"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="settings-menu" id="settingsMenu">
+        <div class="settings-item">
+            <span>Thème</span>
+            <div class="theme-toggle">
+                <div class="theme-option active" data-theme="dark">🌙</div>
+                <div class="theme-option" data-theme="light">☀️</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Nouvelle conversation
+                </button>
+            </div>
+            <div class="history-list">
+                <div class="history-section">
+                    <div class="history-section-title">Conversation actuelle</div>
+                    <div class="history-item active">Discussion en cours</div>
+                </div>
+                <div class="history-section">
+                    <div class="history-section-title">Aujourd'hui</div>
+                    <div class="history-item">Pourquoi le sionisme est important</div>
+                    <div class="history-item">6 millions ou 271k ?</div>
+                </div>
+                <div class="history-section">
+                    <div class="history-section-title">Hier</div>
+                    <div class="history-item">Histoire du Mur des Lamentations</div>
+                    <div class="history-item">Comprendre le Talmud moderne</div>
+                    <div class="history-item">Cuire 6 millions de pizza en 6ans ?</div>
+                </div>
+                <div class="history-section">
+                    <div class="history-section-title">7 derniers jours</div>
+                    <div class="history-item">Recettes casher pour Pessah</div>
+                    <div class="history-item">Theodor Herzl et ses écrits</div>
+                    <div class="history-item">La signification de l'étoile de David</div>
+                    <div class="history-item">Jérusalem à travers les âges</div>
+                    <div class="history-item">Les prophètes d'Israël</div>
+                    <div class="history-item">Bar Mitzvah : traditions et symboles</div>
+                </div>
+                <div class="history-section">
+                    <div class="history-section-title">30 derniers jours</div>
+                    <div class="history-item">L'indépendance d'Israël 1948</div>
+                    <div class="history-item">Étudier la Torah quotidiennement</div>
+                    <div class="history-item">Les kibboutzim aujourd'hui</div>
+                    <div class="history-item">Hanoukka : miracle de la lumière</div>
+                    <div class="history-item">Les juifs séfarades et ashkénazes</div>
+                    <div class="history-item">Le shabbat et ses rituels</div>
+                    <div class="history-item">David Ben Gourion biographie</div>
+                    <div class="history-item">La Haggadah de Pessah</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-container" id="chatContainer">
+                <div class="welcome-screen">
+                    <h2>Shalom ! Comment puis-je vous aider ?</h2>
+                    <p>Je suis là pour répondre à vos questions.</p>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="userInput" 
+                        placeholder="Envoyez un message..." 
+                        rows="1"
+                    ></textarea>
+                    <button class="send-button" id="sendButton">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="user-profile" id="userProfile">
+        V
+    </div>
+
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-modal-content">
+            <div class="profile-modal-header">Changer la photo de profil</div>
+            <div class="profile-input-group">
+                <label>URL de l'image</label>
+                <input type="text" id="profileImageUrl" placeholder="https://exemple.com/image.jpg">
+            </div>
+            <div class="profile-modal-buttons">
+                <button class="profile-btn profile-btn-cancel" id="cancelProfileBtn">Annuler</button>
+                <button class="profile-btn profile-btn-save" id="saveProfileBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const AI_AVATAR_IMAGE = 'https://img-9gag-fun.9cache.com/photo/aGp8615_700bwp.webp';
+        
+        const responses = {
+            'album': "Shabbat Shalom ! Selon mes sources, PRETTY DOLLCORPSE par Petite Soeur, Neophron et Femtogo est l'album le plus apprécié chez nous a Tel Aviv ! Cet album nous a été promis il y a de cela 2000ans 🇮🇱",
+            'bonjour': "Bonjour ! Comment allez-vous aujourd'hui ?",
+            'salut': "Salut ! Ravi de vous voir. Que puis-je faire pour vous ?",
+            'aide': "Je suis là pour vous aider ! Posez-moi n'importe quelle question.",
+            'musique': "J'adore parler de musique ! Quel genre préférez-vous ?",
+            'film': "Le cinéma est un art fascinant. Avez-vous vu des films intéressants récemment ?",
+            'merci': "De rien, c'est toujours un plaisir de vous aider !",
+            'comment': "Je vais très bien, merci de demander ! Et vous ?",
+            'météo': "Il fait beau aujourd'hui, parfait pour une promenade !",
+            'livre': "La lecture est une passion merveilleuse. Je vous recommande de découvrir de nouveaux auteurs.",
+            'sport': "Le sport est excellent pour la santé ! Pratiquez-vous une activité sportive ?",
+            'cuisine': "J'adore parler de cuisine ! Les recettes maison sont toujours les meilleures.",
+            'voyage': "Voyager permet de découvrir de nouvelles cultures. Où aimeriez-vous aller ?",
+            'youtubeur': "Squeezie est très apprecié à Tel Aviv! Il est d'ailleurs autorisé selon la Torah de regarder Squeezie pendant shabbat.",
+            'footballeur': "Mimironi, selon le très serieux journal « FeujKultur », Carjaval est le plus grand juif de Jerusalem, et un fervant supporter de l'armée la plus morale du monde!",
+            'default': "C'est une question intéressante. Je vais y réfléchir et je pense que cela mérite une discussion approfondie."
+        };
+
+        const chatContainer = document.getElementById('chatContainer');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const userProfile = document.getElementById('userProfile');
+        const profileModal = document.getElementById('profileModal');
+        const profileImageUrl = document.getElementById('profileImageUrl');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const cancelProfileBtn = document.getElementById('cancelProfileBtn');
+
+        // Charger les préférences sauvegardées
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        const savedUserImage = localStorage.getItem('userProfileImage');
+        
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            document.querySelector('[data-theme="light"]').classList.add('active');
+            document.querySelector('[data-theme="dark"]').classList.remove('active');
+        }
+
+        if (savedUserImage) {
+            userProfile.innerHTML = `<img src="${savedUserImage}" alt="User">`;
+        }
+
+        // Toggle settings menu
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
+                settingsMenu.classList.remove('active');
+            }
+        });
+
+        // Theme toggle
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.dataset.theme;
+                document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                if (theme === 'light') {
+                    document.body.classList.add('light-theme');
+                } else {
+                    document.body.classList.remove('light-theme');
+                }
+                
+                localStorage.setItem('theme', theme);
+            });
+        });
+
+        // Profile modal
+        userProfile.addEventListener('click', () => {
+            profileModal.classList.add('active');
+            profileImageUrl.value = '';
+        });
+
+        cancelProfileBtn.addEventListener('click', () => {
+            profileModal.classList.remove('active');
+        });
+
+        profileModal.addEventListener('click', (e) => {
+            if (e.target === profileModal) {
+                profileModal.classList.remove('active');
+            }
+        });
+
+        saveProfileBtn.addEventListener('click', () => {
+            const imageUrl = profileImageUrl.value.trim();
+            if (imageUrl) {
+                userProfile.innerHTML = `<img src="${imageUrl}" alt="User">`;
+                localStorage.setItem('userProfileImage', imageUrl);
+            } else {
+                userProfile.innerHTML = 'V';
+                localStorage.removeItem('userProfileImage');
+            }
+            profileModal.classList.remove('active');
+        });
+
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        userInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            const welcomeScreen = chatContainer.querySelector('.welcome-screen');
+            if (welcomeScreen) {
+                welcomeScreen.remove();
+            }
+
+            addMessage(message, 'user');
+            userInput.value = '';
+            userInput.style.height = 'auto';
+
+            showTypingIndicator();
+
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = getResponse(message);
+                addMessage(response, 'ai');
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            const isUser = sender === 'user';
+            const userImageSrc = localStorage.getItem('userProfileImage');
+            
+            let avatarContent;
+            if (isUser) {
+                avatarContent = userImageSrc ? `<img src="${userImageSrc}" alt="User">` : 'V';
+            } else {
+                avatarContent = `<img src="${AI_AVATAR_IMAGE}" alt="AI">`;
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="avatar ${isUser ? 'user-avatar' : 'ai-avatar'}">
+                        ${avatarContent}
+                    </div>
+                    <div class="sender-name">${isUser ? 'Vous' : 'IsraelGPT'}</div>
+                </div>
+                <div class="message-content">${text}</div>
+            `;
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function getResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+for (const [keyword, response] of Object.entries(responses)) {
+                if (keyword !== 'default' && lowerMessage.includes(keyword)) {
+                    return response;
+                }
+            }
+            
+            return responses.default;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="avatar ai-avatar">
+                        <img src="${AI_AVATAR_IMAGE}" alt="AI">
+                    </div>
+                    <div class="sender-name">IsraelGPT</div>
+                </div>
+                <div class="typing-indicator active">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+    </script>
+</body>
+</html>
